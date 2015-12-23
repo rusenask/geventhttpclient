@@ -1,17 +1,9 @@
 import gevent.queue
 import gevent.socket
 
-try:
-    from ssl import get_default_verify_paths
-except ImportError:
-    _CA_CERTS = None
-else:
-    _certs = get_default_verify_paths()
-    _CA_CERTS = _certs.cafile or _certs.capath
+import certifi
 
-if not _CA_CERTS:
-    import certifi
-    _CA_CERTS = certifi.where()
+_CA_CERTS = certifi.where()
 
 try:
     from ssl import _DEFAULT_CIPHERS
@@ -28,7 +20,6 @@ except ImportError:
     # gevent < 1.0b2
     from gevent import coros as lock
 
-
 DEFAULT_CONNECTION_TIMEOUT = 5.0
 DEFAULT_NETWORK_TIMEOUT = 5.0
 
@@ -36,14 +27,13 @@ IGNORED = object()
 
 
 class ConnectionPool(object):
-
     DEFAULT_CONNECTION_TIMEOUT = 5.0
     DEFAULT_NETWORK_TIMEOUT = 5.0
 
     def __init__(self, host, port,
-            size=5, disable_ipv6=False,
-            connection_timeout=DEFAULT_CONNECTION_TIMEOUT,
-            network_timeout=DEFAULT_NETWORK_TIMEOUT):
+                 size=5, disable_ipv6=False,
+                 connection_timeout=DEFAULT_CONNECTION_TIMEOUT,
+                 network_timeout=DEFAULT_NETWORK_TIMEOUT):
         self._closed = False
         self._host = host
         self._port = port
@@ -62,7 +52,7 @@ class ConnectionPool(object):
         if self.disable_ipv6:
             family = gevent.socket.AF_INET
         info = gevent.socket.getaddrinfo(self._host, self._port,
-                family, 0, gevent.socket.SOL_TCP)
+                                         family, 0, gevent.socket.SOL_TCP)
         # family, socktype, proto, canonname, sockaddr = info[0]
         return info
 
@@ -160,6 +150,7 @@ class ConnectionPool(object):
 
 try:
     import gevent.ssl
+
     try:
         from gevent.ssl import match_hostname
     except ImportError:
